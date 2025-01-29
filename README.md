@@ -4,7 +4,7 @@ I sometimes hardcode credentials (api keys, passwords, etc.) into my scripts.
 Most of these scripts are one off scripts that I use for debugging.
 Normally I find myself throwing these scripts away (since they
 have hardcoded credentials in them), only to need the script
-again at some later point in time.
+again two weeks later.
 
 `vault` helps solve this problem. It isn't perfect, but it
 provides a way for me to save scripts on my local system
