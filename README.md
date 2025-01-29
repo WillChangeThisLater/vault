@@ -10,6 +10,11 @@ again two weeks later.
 provides a way for me to save scripts on my local system
 with some level of security
 
+## Setup
+1. Install `uv`
+2. Link this file to your path (something like `ln -s /home/arch/vault/vault.py /usr/bin/vault`)
+3. `vault create` to create the database and encryption/decryption key
+
 ## The CLI
 ```bash
 [arch@archlinux vault]$ vault --help
