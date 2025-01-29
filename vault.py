@@ -22,7 +22,7 @@ def ensure_db_and_key_exist():
 
     if not os.path.exists(DB_PATH):
         conn = sqlite3.connect(DB_PATH)
-        conn.execute("CREATE TABLE scripts (name TEXT PRIMARY KEY, content BLOB)")
+        conn.execute("CREATE TABLE scripts (name TEXT PRIMARY KEY, content BLOB, description TEXT)")
         conn.close()
 
     if not os.path.exists(KEY_PATH):
@@ -63,15 +63,21 @@ def create():
 def ls():
     """List all stored scripts."""
     conn = sqlite3.connect(DB_PATH)
-    cursor = conn.execute("SELECT name FROM scripts")
-    scripts = [row[0] for row in cursor.fetchall()]
+    cursor = conn.execute("SELECT name, description FROM scripts")
+    rows = cursor.fetchall()
     conn.close()
-    click.echo("\n".join(scripts))
+
+    for row in rows:
+        name, description = row
+        if not description:
+            description = "No description available"
+        click.echo(f"{name}: {description}")
 
 
 @vault.command()
 @click.argument('filename')
-def store(filename):
+@click.option('--description', default='', help='Optional description for the script')
+def store(filename, description):
     """Store a script in the vault."""
     with open(filename, 'r') as file:
         content = file.read()
@@ -80,7 +86,7 @@ def store(filename):
     encrypted_content = encrypt(content, key)
 
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("INSERT OR REPLACE INTO scripts (name, content) VALUES (?, ?)", (filename, encrypted_content))
+    conn.execute("INSERT OR REPLACE INTO scripts (name, content, description) VALUES (?, ?, ?)", (filename, encrypted_content, description))
     conn.commit()
     conn.close()
     click.echo(f"{filename} has been stored in the vault.")
