@@ -8,7 +8,7 @@ from vault.clients.llm_clients.base import BaseLLMClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class BedrockLLMClient(BaseLLMClient):
+class LLMClient(BaseLLMClient):
 
     def __init__(self, model_id="amazon.nova-pro-v1:0"):
         self._model_id = model_id

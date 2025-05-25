@@ -8,7 +8,7 @@ from vault.clients.embedding_clients.base import BaseEmbeddingClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class BedrockEmbeddingClient(BaseEmbeddingClient):
+class EmbeddingClient(BaseEmbeddingClient):
     def __init__(self, model_id="amazon.titan-embed-text-v2:0"):
         self._model_id = model_id
         self.client = boto3.client("bedrock-runtime", region_name="us-east-1")

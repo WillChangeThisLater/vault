@@ -9,7 +9,7 @@ from vault.utils import get_default_db_path
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class DuckDBClient(BaseDatabaseClient):
+class DatabaseClient(BaseDatabaseClient):
 
     def __init__(self, db_path: str = get_default_db_path()):
         self.connection = duckdb.connect(db_path)

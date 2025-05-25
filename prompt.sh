@@ -22,12 +22,7 @@ reference_links=(
   "https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-examples.html"
   # I want the LLM to write the screenshoting code
   "https://playwright.dev/python/docs/screenshots"
-)
-
-reference_links=(
-  "https://atlassian-python-api.readthedocs.io/"
-  "https://atlassian-python-api.readthedocs.io/confluence.html#get-page-info"
-  "https://atlassian-python-api.readthedocs.io/jira.html"
+  # I want the LLM to write OpenAI wrappers for LLM summarization and embedding
 )
 
 # Function to display references in a readable manner
@@ -86,37 +81,6 @@ The schema of this parquet file is defined below:
 EOF
 }
 
-misc() {
-	cat <<EOF
-What I want to understand is: what should my data model look like?
-There are a few things to keep in mind here:
-
-	(1) Chunking. I won't be able to embed a huge file; I'll have
-	    to split it up into multiple chunks and embed each separately
-
-	(2) I'm running this locally, using local files. I don't think
-	    I'll actually want to store the file inside the database
-		itself; I'll just want to store the embedding.
-
-		This probably implies some kind of cleanup procedure at some point,
-		where 'vault' finds files that have updated last modified dates
-		(or just don't exist anymore) and does something with them.
-		But worry about this later.
-
-	(3) I might need to support multiple embedding models in the future
-	    At the very least there should be a model field indicating what
-		model was used to generate an embedding
-
-	(4) Eventually, I'll probably want \`vault\` to support URL inputs (so the tool will
-	    have to be able to work with these too). It'll be harder to detect
-		changes on these - maybe a content hash here is appropriate?
-
-Suggest a coherent set of table(s) that will accomplish this goal while
-keeping \`vault\` simple. The fewer tables the better. 
-
-EOF
-}
-
 roadmap() {
   cat <<EOF
 # Roadmap
@@ -142,7 +106,218 @@ EOF
 }
 
 
-example() {
+
+main() {
+	cat <<EOF
+I am building a python based CLI tool, 'vault', for semantic search.
+
+About \`vault\`:
+$(about)
+
+Roadmap for \`vault\`:
+$(roadmap)
+
+Modify \`vault\` to write out a default config file to ~/.config/vault if none exists
+
+\`\`\`default
+default:
+  embedding_provider: openai
+  llm_provider: openai
+  db_provider: ~/embeddings.db
+embedding_clients:
+  openai:
+    model_id: text-embedding-3-large
+  bedrock:
+    model_id: amazon.titan-embed-text-v2:0
+llm_clients:
+  openai:
+    model_id: gpt-4o-mini
+  bedrock:
+    model_id: amazon.nova-pro-v1:0
+database_clients:
+  duckdb:
+    db_path: ~/embeddings.db
+\`\`\`
+EOF
+
+}
+
+main
+
+
+
+
+
+
+
+
+
+
+
+
+openai_samples() {
+  cat <<'EOF'
+Text input:
+************
+\`\`\`python
+from openai import OpenAI
+client = OpenAI()
+
+completion = client.chat.completions.create(
+  model="gpt-4o-mini",
+  messages=[
+    {"role": "developer", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello!"}
+  ]
+)
+
+
+# Response looks like:
+#
+# {
+#   "id": "chatcmpl-B9MBs8CjcvOU2jLn4n570S5qMJKcT",
+#   "object": "chat.completion",
+#   "created": 1741569952,
+#   "model": "gpt-4.1-2025-04-14",
+#   "choices": [
+#     {
+#       "index": 0,
+#       "message": {
+#         "role": "assistant",
+#         "content": "Hello! How can I assist you today?",
+#         "refusal": null,
+#         "annotations": []
+#       },
+#       "logprobs": null,
+#       "finish_reason": "stop"
+#     }
+#   ],
+#   "usage": {
+#     "prompt_tokens": 19,
+#     "completion_tokens": 10,
+#     "total_tokens": 29,
+#     "prompt_tokens_details": {
+#       "cached_tokens": 0,
+#       "audio_tokens": 0
+#     },
+#     "completion_tokens_details": {
+#       "reasoning_tokens": 0,
+#       "audio_tokens": 0,
+#       "accepted_prediction_tokens": 0,
+#       "rejected_prediction_tokens": 0
+#     }
+#   },
+#   "service_tier": "default"
+# }
+\`\`\`
+
+Image input:
+************
+\`\`\`python
+from openai import OpenAI
+
+client = OpenAI()
+
+# Note that the Image URLs here can also be Base64-encoded data
+# This is probably what we want to use for uploading images from
+# something like the local file system
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What's in this image?"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+                    }
+                },
+            ],
+        }
+    ],
+    max_tokens=300,
+)
+
+# Response looks like:
+#
+# {
+#   "id": "chatcmpl-B9MHDbslfkBeAs8l4bebGdFOJ6PeG",
+#   "object": "chat.completion",
+#   "created": 1741570283,
+#   "model": "gpt-4o-mini",
+#   "choices": [
+#     {
+#       "index": 0,
+#       "message": {
+#         "role": "assistant",
+#         "content": "The image shows a wooden boardwalk path running through a lush green field or meadow. The sky is bright blue with some scattered clouds, giving the scene a serene and peaceful atmosphere. Trees and shrubs are visible in the background.",
+#         "refusal": null,
+#         "annotations": []
+#       },
+#       "logprobs": null,
+#       "finish_reason": "stop"
+#     }
+#   ],
+#   "usage": {
+#     "prompt_tokens": 1117,
+#     "completion_tokens": 46,
+#     "total_tokens": 1163,
+#     "prompt_tokens_details": {
+#       "cached_tokens": 0,
+#       "audio_tokens": 0
+#     },
+#     "completion_tokens_details": {
+#       "reasoning_tokens": 0,
+#       "audio_tokens": 0,
+#       "accepted_prediction_tokens": 0,
+#       "rejected_prediction_tokens": 0
+#     }
+#   },
+#   "service_tier": "default"
+# }
+\`\`\`
+
+\`\`\`python
+from openai import OpenAI
+client = OpenAI()
+
+client.embeddings.create(
+  model="text-embedding-ada-002",
+  input="The food was delicious and the waiter...",
+  encoding_format="float"
+)
+
+Embedding generation:
+************
+# response object looks like:
+# 
+# {
+#   "object": "list",
+#   "data": [
+#     {
+#       "object": "embedding",
+#       "embedding": [
+#         0.0023064255,
+#         -0.009327292,
+#         .... (1536 floats total for ada-002)
+#         -0.0028842222,
+#       ],
+#       "index": 0
+#     }
+#   ],
+#   "model": "text-embedding-ada-002",
+#   "usage": {
+#     "prompt_tokens": 8,
+#     "total_tokens": 8
+#   }
+# }
+\`\`\`
+EOF
+}
+
+confluence_example() {
   cat <<'EOF'
 import logging
 import os
@@ -207,30 +382,3 @@ class ConfluencePlugin(BasePlugin):
             database_client.insert(resource)
 EOF
 }
-
-main() {
-	cat <<EOF
-I am building a python based CLI tool, 'vault', for semantic search.
-
-About \`vault\`:
-$(about)
-
-Roadmap for \`vault\`:
-$(roadmap)
-
-Modify the confluence plugin to handle JIRA tickets like the following:
-
-  https://company.atlassian.net/browse/BIE-3111
-
-When the plugin sees a JIRA ticket, it should gather the ticket description,
-status, requester/doers, summary, comments, etc. and put that all into
-one big description. The more metadata the better
-
-References:
-$(references)
-
-EOF
-
-}
-
-main
