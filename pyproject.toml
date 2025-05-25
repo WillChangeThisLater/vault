@@ -1,0 +1,30 @@
+[project]
+name = "vault"
+version = "0.1.0"
+description = "Vault"
+readme = "README.md"
+authors = [
+    { name = "WillChangeThisLater", email = "paulwendt567@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "atlassian-python-api>=4.0.4",
+    "boto3>=1.38.18",
+    "bs4>=0.0.2",
+    "click>=8.2.0",
+    "duckdb>=1.2.2",
+    "numpy>=2.2.5",
+    "pdf2image>=1.17.0",
+    "pillow>=11.2.1",
+    "playwright>=1.52.0",
+    "pyarrow>=20.0.0",
+    "pydantic>=2.11.4",
+    "requests>=2.32.3",
+]
+
+[project.scripts]
+vault = "vault:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
