@@ -40,7 +40,7 @@ class TextFilePlugin(BasePlugin):
         elif os.path.isdir(uri):
             return "dir"
         else:
-            logger.warning(f"URI {uri} not recognized")
+            logger.info(f"URI {uri} not recognized")
             return ""
 
     def can_handle(self, uri: str) -> bool:
